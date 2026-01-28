@@ -29,7 +29,7 @@ import { Loader2, Upload, X, CheckCircle2, Copy, ExternalLink, Rocket, Image as 
 
 
 
-export const uploadFileToPinata = async (file: File, pinataJwt: string) => {
+const uploadFileToPinata = async (file: File, pinataJwt: string) => {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -44,7 +44,7 @@ export const uploadFileToPinata = async (file: File, pinataJwt: string) => {
   return `https://gateway.pinata.cloud/ipfs/${data.IpfsHash}`;
 };
 
-export const uploadJsonToPinata = async (json: any, pinataJwt: string) => {
+const uploadJsonToPinata = async (json: any, pinataJwt: string) => {
   const response = await fetch("https://api.pinata.cloud/pinning/pinJSONToIPFS", {
     method: "POST",
     headers: {
@@ -63,7 +63,7 @@ export const uploadJsonToPinata = async (json: any, pinataJwt: string) => {
 // MAIN COMPONENT
 // ────────────────────────────────────────────────────────────────
 
-export function TokenLaunchpad() {
+export default function TokenLaunchpad() {
   const { connection } = useConnection();
   const wallet = useWallet();
 
