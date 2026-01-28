@@ -12,7 +12,7 @@ import {
 } from "@solana/spl-token";
 import { Loader2, Send, AlertCircle, CheckCircle2, Coins, ArrowRight } from "lucide-react";
 
-export function SendToken() {
+export default function SendToken() {
   const { connection } = useConnection();
   const wallet = useWallet();
 
