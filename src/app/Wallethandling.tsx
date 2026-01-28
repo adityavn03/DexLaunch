@@ -2,7 +2,6 @@
 import {ConnectionProvider,WalletProvider} from "@solana/wallet-adapter-react";
 import {WalletModalProvider,WalletMultiButton} from "@solana/wallet-adapter-react-ui";
 import "@solana/wallet-adapter-react-ui/styles.css";
-import { waitForDebugger } from "inspector";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
 import Home from "./Landing/page";
 

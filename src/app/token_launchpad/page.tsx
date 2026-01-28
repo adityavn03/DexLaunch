@@ -150,6 +150,7 @@ export function TokenLaunchpad() {
 
       const rent = await connection.getMinimumBalanceForRentExemption(totalSpace);
 
+      // ====== TRANSACTION 1: Create Mint ======
       setStatus("Creating mint account (Tx 1/3)...");
       setStep(2);
       const tx1 = new Transaction().add(
@@ -183,9 +184,24 @@ export function TokenLaunchpad() {
 
       setStatus("Approve Tx 1 in wallet...");
       const signed1 = await wallet.signTransaction(tx1);
-      const sig1 = await connection.sendRawTransaction(signed1.serialize(), { maxRetries: 3 });
-      await connection.confirmTransaction({ signature: sig1, blockhash: bh1, lastValidBlockHeight: lh1 }, "confirmed");
+      
+      // Send with skipPreflight to avoid double submission
+      const sig1 = await connection.sendRawTransaction(signed1.serialize(), { 
+        skipPreflight: true,
+        maxRetries: 0 // Don't auto-retry, we'll handle manually
+      });
+      
+      // Confirm with proper error handling
+      const confirmation1 = await connection.confirmTransaction(
+        { signature: sig1, blockhash: bh1, lastValidBlockHeight: lh1 }, 
+        "confirmed"
+      );
+      
+      if (confirmation1.value.err) {
+        throw new Error(`Transaction 1 failed: ${JSON.stringify(confirmation1.value.err)}`);
+      }
 
+      // ====== TRANSACTION 2: Create ATA ======
       setStatus("Creating your token account (Tx 2/3)...");
       setStep(3);
       const ata = getAssociatedTokenAddressSync(mint, wallet.publicKey, false, TOKEN_2022_PROGRAM_ID);
@@ -200,9 +216,22 @@ export function TokenLaunchpad() {
 
       setStatus("Approve Tx 2 in wallet...");
       const signed2 = await wallet.signTransaction(tx2);
-      const sig2 = await connection.sendRawTransaction(signed2.serialize(), { maxRetries: 3 });
-      await connection.confirmTransaction({ signature: sig2, blockhash: bh2, lastValidBlockHeight: lh2 }, "confirmed");
+      
+      const sig2 = await connection.sendRawTransaction(signed2.serialize(), { 
+        skipPreflight: true,
+        maxRetries: 0
+      });
+      
+      const confirmation2 = await connection.confirmTransaction(
+        { signature: sig2, blockhash: bh2, lastValidBlockHeight: lh2 }, 
+        "confirmed"
+      );
+      
+      if (confirmation2.value.err) {
+        throw new Error(`Transaction 2 failed: ${JSON.stringify(confirmation2.value.err)}`);
+      }
 
+      // ====== TRANSACTION 3: Mint Tokens ======
       setStatus("Minting initial supply (Tx 3/3)...");
       setStep(4);
       const rawAmount = BigInt(amount) * BigInt(1_000_000_000);
@@ -217,8 +246,20 @@ export function TokenLaunchpad() {
 
       setStatus("Approve Tx 3 in wallet...");
       const signed3 = await wallet.signTransaction(tx3);
-      const sig3 = await connection.sendRawTransaction(signed3.serialize(), { maxRetries: 3 });
-      await connection.confirmTransaction({ signature: sig3, blockhash: bh3, lastValidBlockHeight: lh3 }, "confirmed");
+      
+      const sig3 = await connection.sendRawTransaction(signed3.serialize(), { 
+        skipPreflight: true,
+        maxRetries: 0
+      });
+      
+      const confirmation3 = await connection.confirmTransaction(
+        { signature: sig3, blockhash: bh3, lastValidBlockHeight: lh3 }, 
+        "confirmed"
+      );
+      
+      if (confirmation3.value.err) {
+        throw new Error(`Transaction 3 failed: ${JSON.stringify(confirmation3.value.err)}`);
+      }
 
       setMintAddress(mint.toBase58());
       setTxSig(sig3);
@@ -229,6 +270,7 @@ export function TokenLaunchpad() {
       let msg = err.message || "Creation failed";
       if (msg.includes("insufficient funds")) msg = "Not enough SOL (~0.05+ SOL needed)";
       else if (msg.includes("User rejected")) msg = "Transaction rejected";
+      else if (msg.includes("already been processed")) msg = "Transaction already processed - check your wallet";
       setError(msg);
       setStep(0);
     } finally {
@@ -388,13 +430,22 @@ export function TokenLaunchpad() {
             {step === 5 && mintAddress && (
               <div className="p-6 bg-gradient-to-br from-indigo-950/50 to-purple-950/50 border border-indigo-500/30 rounded-xl text-center">
                 <CheckCircle2 className="w-16 h-16 text-indigo-400 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold text-white mb-2">Token Launched!</h3>
-                <p className="text-gray-300 mb-6">Your {name} ({symbol}) is now live on Solana</p>
+
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  Token Launched!
+                </h3>
+
+                <p className="text-gray-300 mb-6">
+                  Your {name} ({symbol}) is now live on Solana
+                </p>
 
                 <div className="bg-black/40 p-4 rounded-lg mb-6 font-mono text-sm break-all text-left">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-400">Mint Address</span>
-                    <button onClick={copyMint} className="text-indigo-400 hover:text-indigo-300">
+                    <button
+                      onClick={copyMint}
+                      className="text-indigo-400 hover:text-indigo-300"
+                    >
                       <Copy className="w-4 h-4 inline" />
                     </button>
                   </div>
@@ -411,6 +462,7 @@ export function TokenLaunchpad() {
                     View Mint on Explorer
                     <ExternalLink className="w-4 h-4" />
                   </a>
+
                   {txSig && (
                     <a
                       href={explorerTx}
