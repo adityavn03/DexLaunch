@@ -1,6 +1,8 @@
 /* ================================
    PINATA FILE UPLOAD
 ================================ */
+"use client";
+
 
 export const uploadFileToPinata = async (
   file: File,
