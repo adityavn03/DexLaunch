@@ -7,7 +7,7 @@ import { createUpdateFieldInstruction, Field } from "@solana/spl-token-metadata"
 import { useState } from "react";
 import { Loader2, ExternalLink, AlertCircle, CheckCircle2, RefreshCw, Link2 } from "lucide-react";
 
-export function UpdateMetadata() {
+export default function UpdateMetadata() {
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
 

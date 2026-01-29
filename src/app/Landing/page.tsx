@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import SendToken from '../SendToken/page'
 import MintTokens from "../minttoken/page";
-import { UpdateMetadata } from "../updatemetadata/page";
+import  UpdateMetadata  from "../updatemetadata/page";
 import TokenLaunchpad  from "../token_launchpad/page";
 import LiquidityPool from "../LiquidityPool/page";
 
